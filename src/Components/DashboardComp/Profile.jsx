@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
 
-const Profile = () => {
+const Profile = ({ onProfileUpdate }) => {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -17,40 +17,39 @@ const Profile = () => {
     fetchProfile();
   }, []);
 
-  const fetchProfile = () => {
+  const fetchProfile = async () => {
     const token = localStorage.getItem('token');
     setLoading(true);
-    fetch('/api/getProfile', {
-      headers: { 'Authorization': `Bearer ${token}` }
-    })
-      .then(res => {
-        if (!res.ok) throw new Error('Failed to fetch profile');
-        return res.json();
-      })
-      .then(data => {
-        const u = data.user || {};
-        setProfile({
-          name: u.name || `${u.firstName || ''} ${u.lastName || ''}`.trim() || 'No Name',
-          username: u.username || 'username',
-          email: u.email || 'Email not provided',
-          phone: u.mobile || 'Phone not provided',
-          firstName: u.firstName || '',
-          lastName: u.lastName || '',
-          mobile: u.mobile || '',
-          avatar: u.profilePic || `https://i.pravatar.cc/150?u=${u.id || 'default'}`
-        });
-        setForm({
-          firstName: u.firstName || '',
-          lastName: u.lastName || '',
-          email: u.email || '',
-          mobile: u.mobile || ''
-        });
-        setLoading(false);
-      })
-      .catch(err => {
-        setError(err.message);
-        setLoading(false);
+    setError(null);
+
+    try {
+      const res = await fetch('/api/getProfile', {
+        headers: { 'Authorization': `Bearer ${token}` }
       });
+      if (!res.ok) throw new Error('Failed to fetch profile');
+      const data = await res.json();
+      const u = data.user || {};
+      setProfile({
+        name: u.name || `${u.firstName || ''} ${u.lastName || ''}`.trim() || 'No Name',
+        username: u.username || 'username',
+        email: u.email || 'Email not provided',
+        phone: u.mobile || 'Phone not provided',
+        firstName: u.firstName || '',
+        lastName: u.lastName || '',
+        mobile: u.mobile || '',
+        // avatar removed
+      });
+      setForm({
+        firstName: u.firstName || '',
+        lastName: u.lastName || '',
+        email: u.email || '',
+        mobile: u.mobile || ''
+      });
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoading(false);
+    }
   };
 
   const handleChange = e => {
@@ -74,9 +73,6 @@ const Profile = () => {
         },
         body: JSON.stringify(form),
       });
-
-      setLoading(false);
-
       if (!res.ok) {
         const errorData = await res.json();
         throw new Error(errorData.message || 'Failed to update profile');
@@ -86,10 +82,33 @@ const Profile = () => {
 
       setSuccessMsg(data.message || 'Profile updated successfully');
       setEditMode(false);
-      fetchProfile(); // fresh profile data reload karo
+
+      // Fresh profile fetch after update
+      const profileRes = await fetch('/api/getProfile', {
+        headers: { 'Authorization': `Bearer ${token}` },
+      });
+      const profileData = await profileRes.json();
+      const u = profileData.user || {};
+
+      setProfile({
+        name: u.name || `${u.firstName || ''} ${u.lastName || ''}`.trim() || 'No Name',
+        username: u.username || 'username',
+        email: u.email || 'Email not provided',
+        phone: u.mobile || 'Phone not provided',  // map mobile to phone here
+        firstName: u.firstName || '',
+        lastName: u.lastName || '',
+        mobile: u.mobile || ''
+      });
+
+      // Notify parent component to update sidebar/profile if needed
+      if (onProfileUpdate) {
+        onProfileUpdate(profileData.user);
+      }
+
     } catch (err) {
-      setLoading(false);
       setError(err.message || 'Something went wrong');
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -101,11 +120,7 @@ const Profile = () => {
       {!editMode ? (
         <>
           <div className="flex flex-col items-center">
-            <img
-              src={profile.avatar}
-              alt="User Avatar"
-              className="w-32 h-32 rounded-full mb-4 object-cover"
-            />
+            {/* Avatar removed */}
             <h1 className="text-2xl font-bold text-gray-800">{profile.name}</h1>
             <p className="text-gray-600">@{profile.username}</p>
           </div>
