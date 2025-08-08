@@ -14,15 +14,13 @@ const Dashboardcomp = () => {
 
   const [selectedmenu, setselectedmenu] = useState('Dashboard');
 
-  // Yeh function Profile component ko pass karenge
-  // Jab profile update ho to yeh sidebar ke state ko bhi update karega
   const handleProfileUpdate = (updatedProfile) => {
     setProfile(updatedProfile);
   };
 
   const content = {
     "Dashboard": <Dashboard />,
-    // Profile me onProfileUpdate prop bheji ja rahi hai
+
     "Profile": <Profile onProfileUpdate={handleProfileUpdate} />,
     "Logs": <Others />
   };

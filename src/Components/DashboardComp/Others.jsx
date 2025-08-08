@@ -6,11 +6,11 @@ const Others = () => {
   const [error, setError] = useState(null)
 
   useEffect(() => {
-    const token = localStorage.getItem('token') // JWT token ko localStorage se laa rahe hain
+    const token = localStorage.getItem('token') 
 
     fetch('/api/allLogs', {
       headers: {
-        'Authorization': `Bearer ${token}`   // Token bhejna zaruri hai
+        'Authorization': `Bearer ${token}`   
       }
     })
       .then(res => {

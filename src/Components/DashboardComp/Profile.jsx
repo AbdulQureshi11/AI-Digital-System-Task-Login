@@ -94,13 +94,13 @@ const Profile = ({ onProfileUpdate }) => {
         name: u.name || `${u.firstName || ''} ${u.lastName || ''}`.trim() || 'No Name',
         username: u.username || 'username',
         email: u.email || 'Email not provided',
-        phone: u.mobile || 'Phone not provided',  // map mobile to phone here
+        phone: u.mobile || 'Phone not provided', 
         firstName: u.firstName || '',
         lastName: u.lastName || '',
         mobile: u.mobile || ''
       });
 
-      // Notify parent component to update sidebar/profile if needed
+      
       if (onProfileUpdate) {
         onProfileUpdate(profileData.user);
       }
