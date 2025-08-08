@@ -111,6 +111,7 @@ const Registercomp = () => {
                   value={values.mobile}
                   onChange={(e) => setFieldValue("mobile", e.target.value)}
                   className=' rounded-md p-2 w-full border-b placeholder:text-gray-300 text-sm text-center border-gray-400'
+                  style={{ MozAppearance: 'textfield', WebkitAppearance: 'none' }}
                 />
                 <ErrorMessage name="mobile" component='div' className='font-semibold text-white' />
               </div>

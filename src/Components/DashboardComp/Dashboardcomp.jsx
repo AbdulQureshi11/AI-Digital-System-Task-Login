@@ -1,12 +1,24 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
+import { sidebarmenu } from '../../Utlis/Sidebar';
+import Dashboard from './Dashboard';
+import Profile from './Profile';
+import Others from './Others';
 
 const Dashboardcomp = () => {
   const navigate = useNavigate();
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
+
+  const [selectedmenu, setselectedmenu] = useState('Dashboard');
+  const content = {
+    "Dashboard": <Dashboard />,
+    "Profile": <Profile />,
+    "Logs": <Others />
+  }
+
 
   useEffect(() => {
     const token = localStorage.getItem('token');
@@ -62,7 +74,8 @@ const Dashboardcomp = () => {
       {/* Main content */}
       <div className="flex pt-[50px] min-h-[calc(100vh-50px)]">
         {/* Sidebar */}
-        <aside className="w-[18%] bg-gray-900 text-white p-4 flex flex-col items-center gap-3">
+        <div className="w-[18%] bg-gray-900 text-white p-4 flex flex-col items-center gap-6">
+          {/* User Profile Section */}
           {loading ? (
             <p className="italic text-gray-300">Loading profile...</p>
           ) : error ? (
@@ -75,12 +88,25 @@ const Dashboardcomp = () => {
           ) : (
             <p>No profile data</p>
           )}
-        </aside>
+
+          {/* Sidebar Menu Section */}
+          <div className="w-full mt-4">
+            {sidebarmenu?.map((item, index) => (
+              <div
+                key={index}
+                onClick={() => setselectedmenu(item?.name)}
+                className={`${selectedmenu === item?.name ? "bg-gray-700 font-semibold rounded-md" : ""} flex items-center space-y-3 text-[18px] gap-5 p-2 cursor-pointer transition-all`}>
+                <span className='bg-gray-200 p-3 text-gray-900'>{item?.icon}</span>
+                <span>{item?.name}</span>
+              </div>
+            ))}
+          </div>
+        </div>
 
         {/* Content area */}
         <main className="flex-1 bg-gray-100 p-6">
-          <h1 className="text-2xl font-bold">Welcome to Dashboard</h1>
-          {/* Add more dashboard content here */}
+          {content[selectedmenu]}
+
         </main>
       </div>
     </div>
