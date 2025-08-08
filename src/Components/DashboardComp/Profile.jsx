@@ -4,7 +4,7 @@ const Profile = () => {
   const [profile, setProfile] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [editMode, setEditMode] = useState(false); // form toggle
+  const [editMode, setEditMode] = useState(false);
   const [form, setForm] = useState({
     firstName: '',
     lastName: '',
@@ -57,7 +57,7 @@ const Profile = () => {
     setForm(prev => ({ ...prev, [e.target.name]: e.target.value }));
   };
 
-  const handleSubmit = e => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
     setError(null);
     setSuccessMsg('');
@@ -65,27 +65,32 @@ const Profile = () => {
 
     const token = localStorage.getItem('token');
 
-    fetch('/api/updateProfile', {
-      method: 'PUT',
-      headers: {
-        'Authorization': `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(form)
-    })
-      .then(res => {
-        setLoading(false);
-        if (!res.ok) throw new Error('Failed to update profile');
-        return res.json();
-      })
-      .then(data => {
-        setSuccessMsg(data.message || 'Profile updated successfully');
-        setEditMode(false);
-        fetchProfile(); // reload profile data fresh from backend
-      })
-      .catch(err => {
-        setError(err.message);
+    try {
+      const res = await fetch('/api/updateProfile', {
+        method: 'PUT',
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(form),
       });
+
+      setLoading(false);
+
+      if (!res.ok) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || 'Failed to update profile');
+      }
+
+      const data = await res.json();
+
+      setSuccessMsg(data.message || 'Profile updated successfully');
+      setEditMode(false);
+      fetchProfile(); // fresh profile data reload karo
+    } catch (err) {
+      setLoading(false);
+      setError(err.message || 'Something went wrong');
+    }
   };
 
   if (loading) return <p className="text-center mt-10 text-gray-600">Loading profile...</p>;
@@ -139,6 +144,7 @@ const Profile = () => {
               value={form.firstName}
               onChange={handleChange}
               className="w-full border border-gray-300 rounded px-3 py-2"
+              required
             />
           </div>
           <div>
@@ -149,6 +155,7 @@ const Profile = () => {
               value={form.lastName}
               onChange={handleChange}
               className="w-full border border-gray-300 rounded px-3 py-2"
+              required
             />
           </div>
           <div>
@@ -159,6 +166,7 @@ const Profile = () => {
               value={form.email}
               onChange={handleChange}
               className="w-full border border-gray-300 rounded px-3 py-2"
+              required
             />
           </div>
           <div>
@@ -169,6 +177,7 @@ const Profile = () => {
               value={form.mobile}
               onChange={handleChange}
               className="w-full border border-gray-300 rounded px-3 py-2"
+              required
             />
           </div>
 
